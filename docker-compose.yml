@@ -1,0 +1,10 @@
+version: '3'
+services:
+    courses.api:
+        image: kyouma337/courses.api:latest
+        container_name: courses-api
+        restart: always
+        ports:
+            - 3000:3000
+        volumes:
+            - ./.env:/opt/app/.env
