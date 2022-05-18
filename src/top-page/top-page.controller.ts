@@ -13,6 +13,9 @@ import {
     ValidationPipe,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { Cron, CronExpression, SchedulerRegistry } from '@nestjs/schedule';
+import { throws } from 'assert';
+import { HhService } from 'src/hh/hh.service';
 import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 import { IdValidationPipe } from '../pipes/id-validation.pipe';
 import { CreateTopPageDto } from './dto/create-top-page.dto';
@@ -25,6 +28,8 @@ export class TopPageController {
     constructor(
         private readonly configService: ConfigService,
         private readonly topPageService: TopPageService,
+        private readonly hhService: HhService,
+        private readonly scheduleRegistry: SchedulerRegistry,
     ) {}
 
     @UseGuards(JwtAuthGuard)
@@ -84,5 +89,26 @@ export class TopPageController {
     @Get('text-search/:text')
     async search(@Body() dto: FindTopPageDto) {
         return this.topPageService.findByCategory(dto.firstCategory);
+    }
+
+    @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT, { name: 'test' })
+    async test() {
+        // const job = this.scheduleRegistry.getCronJob('test');
+
+        const data = await this.topPageService.findForHhUpdate(new Date());
+        for (let page of data) {
+            const hhData = await this.hhService.getData(page.category);
+            page.hh = hhData;
+            await this.sleep();
+            await this.topPageService.updateById(page._id, page);
+        }
+    }
+
+    sleep() {
+        return new Promise<void>((resolve, reject) => {
+            setTimeout(() => {
+                resolve();
+            }, 1000);
+        });
     }
 }
