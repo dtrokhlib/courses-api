@@ -10,7 +10,7 @@ jobs:
         steps:
             - uses: actions/checkout@release
             - name: Publish to registry
-              uses: elgohr/Publish-Docker-Github-Action@master
+              uses: elgohr/Publish-Docker-Github-Action@v5
               with:
                   registry: docker.pkg.github.com
                   name: docker.pkg.github.com/dtrokhlib/courses-api/kyouma337/courses.api
